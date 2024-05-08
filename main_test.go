@@ -77,12 +77,15 @@ func TestChat(t *testing.T) {
 
 	tmpDir := t.TempDir()
 
+	// 実行
 	args := os.Args[0:1]
 	args = append(args, "hello")
 	err := run(args, tmpDir, MockClient{})
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// config読み込み
 	config := Config{Path: filepath.Join(tmpDir, "config.json")}
 	configFile, err := os.Open(config.Path)
 	if err != nil {
@@ -98,6 +101,8 @@ func TestChat(t *testing.T) {
 	if err = json.Unmarshal(bytes, &config); err != nil {
 		t.Fatal(err)
 	}
+
+	// session読み込み
 	session := Session{Dir: filepath.Join(tmpDir, "session")}
 	sessionFile, err := os.Open(filepath.Join(session.Dir, fmt.Sprintf(`%s.json`, config.SessionId)))
 	if err != nil {
@@ -112,6 +117,8 @@ func TestChat(t *testing.T) {
 	if err = json.Unmarshal(bytes, &session); err != nil {
 		t.Fatal(err)
 	}
+
+	// 結果確認
 	want := []openai.ChatCompletionMessage{
 		{
 			Role:    openai.ChatMessageRoleUser,

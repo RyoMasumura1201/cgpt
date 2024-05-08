@@ -73,7 +73,7 @@ func TestShowSessionWhenNoConfig(t *testing.T) {
 	}
 }
 
-func TestChat(t *testing.T) {
+func TestChatForTheFirstTime(t *testing.T) {
 
 	tmpDir := t.TempDir()
 
@@ -120,6 +120,85 @@ func TestChat(t *testing.T) {
 
 	// 結果確認
 	want := []openai.ChatCompletionMessage{
+		{
+			Role:    openai.ChatMessageRoleUser,
+			Content: "hello",
+		},
+		{
+			Role:    openai.ChatMessageRoleAssistant,
+			Content: "Hello! How can I assist you today?",
+		},
+	}
+	if len(want) != len(session.Messages) {
+		t.Fatal(err)
+	}
+
+	for i, v := range want {
+		if !reflect.DeepEqual(v, session.Messages[i]) {
+			t.Fatalf("expected %v, got %v", v, session.Messages[i])
+		}
+	}
+}
+
+func TestChat(t *testing.T) {
+
+	tmpDir := t.TempDir()
+
+	// 実行
+	args := os.Args[0:1]
+	args = append(args, "hello")
+	err := run(args, tmpDir, MockClient{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = run(args, tmpDir, MockClient{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// config読み込み
+	config := Config{Path: filepath.Join(tmpDir, "config.json")}
+	configFile, err := os.Open(config.Path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer configFile.Close()
+
+	bytes, err := io.ReadAll(configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = json.Unmarshal(bytes, &config); err != nil {
+		t.Fatal(err)
+	}
+
+	// session読み込み
+	session := Session{Dir: filepath.Join(tmpDir, "session")}
+	sessionFile, err := os.Open(filepath.Join(session.Dir, fmt.Sprintf(`%s.json`, config.SessionId)))
+	if err != nil {
+		t.Fatal("Session file is not exist.", err)
+	}
+	defer sessionFile.Close()
+
+	bytes, err = io.ReadAll(sessionFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(bytes, &session); err != nil {
+		t.Fatal(err)
+	}
+
+	// 結果確認
+	want := []openai.ChatCompletionMessage{
+		{
+			Role:    openai.ChatMessageRoleUser,
+			Content: "hello",
+		},
+		{
+			Role:    openai.ChatMessageRoleAssistant,
+			Content: "Hello! How can I assist you today?",
+		},
 		{
 			Role:    openai.ChatMessageRoleUser,
 			Content: "hello",

@@ -2,6 +2,10 @@
 
 text generation cli
 
+## Installation
+
+You can download and extract files for your own platform from [GitHub Releases](https://github.com/RyoMasumura1201/cgpt/releases)
+
 ## Usage
 
 Set Your API KEY

@@ -13,7 +13,7 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-func TestReset(t *testing.T) {
+func TestResetChat(t *testing.T) {
 	// config作成
 	tmpDir := t.TempDir()
 
@@ -42,7 +42,7 @@ func TestReset(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// 結果確認
+	// 結果確認(configのchatIdが更新されていることを確認)
 	configFile, err = os.Open(config.Path)
 	if err != nil {
 		t.Fatal(err)
@@ -58,7 +58,7 @@ func TestReset(t *testing.T) {
 		t.Fatal(err)
 	}
 	if beforeChatId == config.ChatId {
-		t.Fatal(err)
+		t.Fatal("The chatId in the config file has not been updated.")
 	}
 }
 
@@ -69,7 +69,7 @@ func TestShowChatWhenNoConfig(t *testing.T) {
 	args = append(args, "show", "chat")
 	err := run(args, tmpDir, MockClient{})
 	if err == nil {
-		t.Errorf("Expected file not exist error: %v", err)
+		t.Fatalf("Expected file not exist error: %v", err)
 	}
 }
 
@@ -106,7 +106,7 @@ func TestChatForTheFirstTime(t *testing.T) {
 	chat := Chat{Dir: filepath.Join(tmpDir, "chat")}
 	chatFile, err := os.Open(filepath.Join(chat.Dir, fmt.Sprintf(`%s.json`, config.ChatId)))
 	if err != nil {
-		t.Fatal("Chat file is not exist.", err)
+		t.Fatal(err)
 	}
 	defer chatFile.Close()
 
@@ -118,7 +118,7 @@ func TestChatForTheFirstTime(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// 結果確認
+	// 結果確認(会話が保存されていることを確認)
 	want := []openai.ChatCompletionMessage{
 		{
 			Role:    openai.ChatMessageRoleUser,
@@ -130,7 +130,7 @@ func TestChatForTheFirstTime(t *testing.T) {
 		},
 	}
 	if len(want) != len(chat.Messages) {
-		t.Fatal(err)
+		t.Fatal("The message count is incorrect")
 	}
 
 	for i, v := range want {
@@ -140,6 +140,7 @@ func TestChatForTheFirstTime(t *testing.T) {
 	}
 }
 
+// 会話履歴がある状態での会話
 func TestChat(t *testing.T) {
 
 	tmpDir := t.TempDir()
@@ -177,7 +178,7 @@ func TestChat(t *testing.T) {
 	chat := Chat{Dir: filepath.Join(tmpDir, "chat")}
 	chatFile, err := os.Open(filepath.Join(chat.Dir, fmt.Sprintf(`%s.json`, config.ChatId)))
 	if err != nil {
-		t.Fatal("Chat file is not exist.", err)
+		t.Fatal(err)
 	}
 	defer chatFile.Close()
 
@@ -189,7 +190,7 @@ func TestChat(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// 結果確認
+	// 結果確認(会話が保存されていることを確認)
 	want := []openai.ChatCompletionMessage{
 		{
 			Role:    openai.ChatMessageRoleUser,
@@ -209,7 +210,7 @@ func TestChat(t *testing.T) {
 		},
 	}
 	if len(want) != len(chat.Messages) {
-		t.Fatal(err)
+		t.Fatal("The message count is incorrect")
 	}
 
 	for i, v := range want {

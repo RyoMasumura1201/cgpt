@@ -17,11 +17,11 @@ func TestReset(t *testing.T) {
 	// config作成
 	tmpDir := t.TempDir()
 
-	sessionId, err := uuid.NewRandom()
+	chatId, err := uuid.NewRandom()
 	if err != nil {
 		t.Fatal(err)
 	}
-	config := Config{SessionId: sessionId.String(), Path: filepath.Join(tmpDir, "config.json")}
+	config := Config{ChatId: chatId.String(), Path: filepath.Join(tmpDir, "config.json")}
 	configFile, err := os.Create(config.Path)
 	if err != nil {
 		t.Fatal(err)
@@ -37,7 +37,7 @@ func TestReset(t *testing.T) {
 	args := os.Args[0:1]
 	args = append(args, "reset")
 
-	beforeSessionId := config.SessionId
+	beforeChatId := config.ChatId
 	if err = run(args, tmpDir, MockClient{}); err != nil {
 		t.Fatal(err)
 	}
@@ -57,16 +57,16 @@ func TestReset(t *testing.T) {
 	if err = json.Unmarshal(bytes, &config); err != nil {
 		t.Fatal(err)
 	}
-	if beforeSessionId == config.SessionId {
+	if beforeChatId == config.ChatId {
 		t.Fatal(err)
 	}
 }
 
-func TestShowSessionWhenNoConfig(t *testing.T) {
+func TestShowChatWhenNoConfig(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	args := os.Args[0:1]
-	args = append(args, "show", "session")
+	args = append(args, "show", "chat")
 	err := run(args, tmpDir, MockClient{})
 	if err == nil {
 		t.Errorf("Expected file not exist error: %v", err)
@@ -102,19 +102,19 @@ func TestChatForTheFirstTime(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// session読み込み
-	session := Session{Dir: filepath.Join(tmpDir, "session")}
-	sessionFile, err := os.Open(filepath.Join(session.Dir, fmt.Sprintf(`%s.json`, config.SessionId)))
+	// chat読み込み
+	chat := Chat{Dir: filepath.Join(tmpDir, "chat")}
+	chatFile, err := os.Open(filepath.Join(chat.Dir, fmt.Sprintf(`%s.json`, config.ChatId)))
 	if err != nil {
-		t.Fatal("Session file is not exist.", err)
+		t.Fatal("Chat file is not exist.", err)
 	}
-	defer sessionFile.Close()
+	defer chatFile.Close()
 
-	bytes, err = io.ReadAll(sessionFile)
+	bytes, err = io.ReadAll(chatFile)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bytes, &session); err != nil {
+	if err = json.Unmarshal(bytes, &chat); err != nil {
 		t.Fatal(err)
 	}
 
@@ -129,13 +129,13 @@ func TestChatForTheFirstTime(t *testing.T) {
 			Content: "Hello! How can I assist you today?",
 		},
 	}
-	if len(want) != len(session.Messages) {
+	if len(want) != len(chat.Messages) {
 		t.Fatal(err)
 	}
 
 	for i, v := range want {
-		if !reflect.DeepEqual(v, session.Messages[i]) {
-			t.Fatalf("expected %v, got %v", v, session.Messages[i])
+		if !reflect.DeepEqual(v, chat.Messages[i]) {
+			t.Fatalf("expected %v, got %v", v, chat.Messages[i])
 		}
 	}
 }
@@ -173,19 +173,19 @@ func TestChat(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// session読み込み
-	session := Session{Dir: filepath.Join(tmpDir, "session")}
-	sessionFile, err := os.Open(filepath.Join(session.Dir, fmt.Sprintf(`%s.json`, config.SessionId)))
+	// chat読み込み
+	chat := Chat{Dir: filepath.Join(tmpDir, "chat")}
+	chatFile, err := os.Open(filepath.Join(chat.Dir, fmt.Sprintf(`%s.json`, config.ChatId)))
 	if err != nil {
-		t.Fatal("Session file is not exist.", err)
+		t.Fatal("Chat file is not exist.", err)
 	}
-	defer sessionFile.Close()
+	defer chatFile.Close()
 
-	bytes, err = io.ReadAll(sessionFile)
+	bytes, err = io.ReadAll(chatFile)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = json.Unmarshal(bytes, &session); err != nil {
+	if err = json.Unmarshal(bytes, &chat); err != nil {
 		t.Fatal(err)
 	}
 
@@ -208,13 +208,13 @@ func TestChat(t *testing.T) {
 			Content: "Hello! How can I assist you today?",
 		},
 	}
-	if len(want) != len(session.Messages) {
+	if len(want) != len(chat.Messages) {
 		t.Fatal(err)
 	}
 
 	for i, v := range want {
-		if !reflect.DeepEqual(v, session.Messages[i]) {
-			t.Fatalf("expected %v, got %v", v, session.Messages[i])
+		if !reflect.DeepEqual(v, chat.Messages[i]) {
+			t.Fatalf("expected %v, got %v", v, chat.Messages[i])
 		}
 	}
 }

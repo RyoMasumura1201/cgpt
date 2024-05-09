@@ -23,7 +23,7 @@ cgpt "hello"
 # Chat with GPT by VSCode
 cgpt -e
 
-# Reset session
+# Reset chat
 cgpt reset
 
 # Switch GPT model
@@ -32,8 +32,8 @@ cgpt model
 # Output config
 cgpt show config
 
-# Output session
-cgpt show session
+# Output chat
+cgpt show chat
 
 # Help
 cgpt h

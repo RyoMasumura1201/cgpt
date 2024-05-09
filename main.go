@@ -25,15 +25,15 @@ func run(args []string, outputDir string, client Client) error {
 		Commands: []*cli.Command{
 			{
 				Name:  "reset",
-				Usage: "Reset session",
+				Usage: "Reset chat",
 				Action: func(ctx *cli.Context) error {
-					sessionId, err := uuid.NewRandom()
+					chatId, err := uuid.NewRandom()
 					if err != nil {
 						return err
 					}
 
-					// configのsession更新
-					config.SessionId = sessionId.String()
+					// configのchat更新
+					config.ChatId = chatId.String()
 					err = config.update()
 					if err != nil {
 						return nil
@@ -67,7 +67,7 @@ func run(args []string, outputDir string, client Client) error {
 			},
 			{
 				Name:  "show",
-				Usage: "Show Config or Session",
+				Usage: "Show Config or Chat",
 				Subcommands: []*cli.Command{
 					{
 						Name:  "config",
@@ -82,15 +82,15 @@ func run(args []string, outputDir string, client Client) error {
 						},
 					},
 					{
-						Name:  "session",
-						Usage: "Show session",
+						Name:  "chat",
+						Usage: "Show chat",
 						Action: func(ctx *cli.Context) error {
-							session := Session{Dir: filepath.Join(outputDir, "session")}
-							err := session.read(config.SessionId)
+							chat := Chat{Dir: filepath.Join(outputDir, "chat")}
+							err := chat.read(config.ChatId)
 							if err != nil {
 								return err
 							}
-							jsonData, err := json.MarshalIndent(session, "", "  ")
+							jsonData, err := json.MarshalIndent(chat, "", "  ")
 							if err != nil {
 								return err
 							}
@@ -110,17 +110,17 @@ func run(args []string, outputDir string, client Client) error {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			session := Session{Dir: filepath.Join(outputDir, "session")}
+			chat := Chat{Dir: filepath.Join(outputDir, "chat")}
 
-			convesationId := config.SessionId
-			sessionPath := filepath.Join(session.Dir, fmt.Sprintf(`%s.json`, convesationId))
+			convesationId := config.ChatId
+			chatPath := filepath.Join(chat.Dir, fmt.Sprintf(`%s.json`, convesationId))
 
 			// 会話履歴ファイルの作成or読み取り
-			if _, err := os.Stat(sessionPath); os.IsNotExist(err) {
-				session.Messages = []openai.ChatCompletionMessage{}
-				session.create(convesationId)
+			if _, err := os.Stat(chatPath); os.IsNotExist(err) {
+				chat.Messages = []openai.ChatCompletionMessage{}
+				chat.create(convesationId)
 			} else {
-				err = session.read(convesationId)
+				err = chat.read(convesationId)
 				if err != nil {
 					return err
 				}
@@ -139,15 +139,15 @@ func run(args []string, outputDir string, client Client) error {
 				content = &contentStr
 			}
 
-			session.Messages = append(session.Messages, openai.ChatCompletionMessage{Role: openai.ChatMessageRoleUser, Content: *content})
-			result, err := client.runOpenAI(config.Model, session.Messages)
+			chat.Messages = append(chat.Messages, openai.ChatCompletionMessage{Role: openai.ChatMessageRoleUser, Content: *content})
+			result, err := client.runOpenAI(config.Model, chat.Messages)
 			if err != nil {
 				return err
 			}
-			session.Messages = append(session.Messages, *result)
+			chat.Messages = append(chat.Messages, *result)
 
-			// sessionFileを更新
-			err = session.update(convesationId)
+			// chatFileを更新
+			err = chat.update(convesationId)
 			if err != nil {
 				return err
 			}
@@ -177,17 +177,17 @@ func main() {
 }
 
 func load(outputDir string) (*Config, error) {
-	createDirIfNotExists(filepath.Join(outputDir, "session"))
+	createDirIfNotExists(filepath.Join(outputDir, "chat"))
 	createDirIfNotExists(filepath.Join(outputDir, "message"))
 
 	config := Config{Path: filepath.Join(outputDir, "config.json")}
 	// config.json作成or読み取り
 	if _, err := os.Stat(config.Path); os.IsNotExist(err) {
-		sessionId, err := uuid.NewRandom()
+		chatId, err := uuid.NewRandom()
 		if err != nil {
 			return nil, err
 		}
-		config.SessionId = sessionId.String()
+		config.ChatId = chatId.String()
 		config.Model = openai.GPT3Dot5Turbo
 		err = config.create()
 		if err != nil {

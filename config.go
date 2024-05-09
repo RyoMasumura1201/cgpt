@@ -8,9 +8,9 @@ import (
 )
 
 type Config struct {
-	SessionId string `json:"sessionId"`
-	Model     string `json:"model"`
-	Path      string `json:"path"`
+	ChatId string `json:"chatId"`
+	Model  string `json:"model"`
+	Path   string `json:"path"`
 }
 
 func (c *Config) read() error {

@@ -56,6 +56,7 @@ func run(args []string, outputDir string, client Client) error {
 						return err
 					}
 
+					// configのModel更新
 					config.Model = model
 					err = config.update()
 					if err != nil {

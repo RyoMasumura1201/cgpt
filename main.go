@@ -47,7 +47,12 @@ func run(args []string, outputDir string, client Client) error {
 				Action: func(ctx *cli.Context) error {
 					prompt := promptui.Select{
 						Label: "Select Model",
-						Items: []string{openai.GPT3Dot5Turbo, openai.GPT4, openai.GPT4Turbo},
+						Items: []string{
+							openai.GPT4o,
+							openai.GPT3Dot5Turbo,
+							openai.GPT4,
+							openai.GPT4Turbo,
+						},
 					}
 
 					_, model, err := prompt.Run()
@@ -188,7 +193,7 @@ func load(outputDir string) (*Config, error) {
 			return nil, err
 		}
 		config.ChatId = chatId.String()
-		config.Model = openai.GPT3Dot5Turbo
+		config.Model = openai.GPT4o
 		err = config.create()
 		if err != nil {
 			return nil, err
